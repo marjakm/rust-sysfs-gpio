@@ -55,6 +55,7 @@ use std::io::{Error, ErrorKind, SeekFrom};
 use std::fs;
 use std::fs::{File};
 
+#[derive(Debug)]
 pub struct Pin {
     pin_num : u64,
 }
