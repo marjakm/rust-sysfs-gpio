@@ -16,5 +16,5 @@ interrupts) GPIOs from userspace.
 See https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
 """
 
-[dependencies]
-nix = "*"
+[dependencies.nix]
+git = "https://github.com/marjakm/nix-rust.git"
