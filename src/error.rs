@@ -52,6 +52,9 @@ impl convert::From<io::Error> for Error {
 
 impl convert::From<::nix::Error> for Error {
     fn from(e: ::nix::Error) -> Error {
-        Error::Io(io::Error::from_raw_os_error(e.errno() as i32))
+        match e {
+            ::nix::Error::Sys(eno) => Error::Io(io::Error::from_raw_os_error(eno as i32)),
+            _ => Error::Io(io::Error::new(io::ErrorKind::Other, format!("{:?}", e))),
+        }
     }
 }

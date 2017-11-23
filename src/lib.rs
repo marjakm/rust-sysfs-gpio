@@ -183,9 +183,9 @@ impl Pin {
             None => return Err(Error::InvalidPath(format!("{:?}", pb))),
         };
 
-        let num: u64 = match caps.at(1) {
+        let num: u64 = match caps.get(1) {
             Some(num) => {
-                match num.parse() {
+                match num.as_str().parse() {
                     Ok(unum) => unum,
                     Err(_) => return Err(Error::InvalidPath(format!("{:?}", pb))),
                 }
@@ -478,12 +478,8 @@ impl PinPoller {
         let devfile_fd = devfile.as_raw_fd();
         let epoll_fd = epoll_create()?;
         let events = EPOLLPRI | EPOLLET;
-        let info = EpollEvent {
-            events: events,
-            data: 0u64,
-        };
-
-        match epoll_ctl(epoll_fd, EpollOp::EpollCtlAdd, devfile_fd, &info) {
+        let mut info = EpollEvent::new(events, 0u64);
+        match epoll_ctl(epoll_fd, EpollOp::EpollCtlAdd, devfile_fd, &mut info) {
             Ok(_) => {
                 Ok(PinPoller {
                        pin_num: pin_num,
@@ -523,10 +519,7 @@ impl PinPoller {
     #[cfg(any(target_os = "linux", target_os = "android"))]
     pub fn poll(&mut self, timeout_ms: isize) -> Result<Option<u8>> {
         flush_input_from_file(&mut self.devfile, 255)?;
-        let dummy_event = EpollEvent {
-            events: EPOLLPRI | EPOLLET,
-            data: 0u64,
-        };
+        let dummy_event = EpollEvent::new(EPOLLPRI | EPOLLET, 0u64);
         let mut events: [EpollEvent; 1] = [dummy_event];
         let cnt = epoll_wait(self.epoll_fd, &mut events, timeout_ms)?;
         Ok(match cnt {
